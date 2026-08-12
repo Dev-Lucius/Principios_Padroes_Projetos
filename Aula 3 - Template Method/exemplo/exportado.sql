@@ -1,0 +1,13 @@
+DROP DATABASE IF EXISTS template_method; 
+CREATE DATABASE template_method; 
+\c template_method; 
+CREATE TABLE pessoa (id serial primary key, nome text); 
+INSERT INTO pessoa (id, nome) VALUES (1,'JAAZIEL'); 
+INSERT INTO pessoa (id, nome) VALUES (2,'GABRIEL'); 
+INSERT INTO pessoa (id, nome) VALUES (3,'ROBERTO'); 
+INSERT INTO pessoa (id, nome) VALUES (4,'FRAN'); 
+INSERT INTO pessoa (id, nome) VALUES (5,'DORIS'); 
+INSERT INTO pessoa (id, nome) VALUES (6,'MAXWELL'); 
+INSERT INTO pessoa (id, nome) VALUES (7,'JEFFERSON'); 
+INSERT INTO pessoa (id, nome) VALUES (8,'FRANCISCO'); 
+INSERT INTO pessoa (id, nome) VALUES (9,'NATÃ'); 

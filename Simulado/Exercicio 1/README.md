@@ -24,7 +24,7 @@ Carteira digital
 
 ---
 
-# Solução
+# Resolvendo um Strategy
 
 ## 1. Encontro o Comportamento que Varia e o Que se Mantêm Constante
 

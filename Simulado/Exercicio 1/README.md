@@ -1,4 +1,4 @@
-# Coomo pensar na Solução
+# Solução
 
 ## Padrão Usado -> **Strategy**
 

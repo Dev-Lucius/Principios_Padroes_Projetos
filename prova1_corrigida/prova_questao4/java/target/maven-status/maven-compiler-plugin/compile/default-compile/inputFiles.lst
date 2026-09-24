@@ -1,0 +1,11 @@
+/home/lucius/Estudos/Principios_Padroes_Projetos/prova1_corrigida/prova_questao4/java/src/main/java/design_patters/apresentacao/Main.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/prova1_corrigida/prova_questao4/java/src/main/java/design_patters/dominio/Bar.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/prova1_corrigida/prova_questao4/java/src/main/java/design_patters/dominio/Confeitaria.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/prova1_corrigida/prova_questao4/java/src/main/java/design_patters/dominio/Cozinha.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/prova1_corrigida/prova_questao4/java/src/main/java/design_patters/dominio/EsteiraDePedidos.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/prova1_corrigida/prova_questao4/java/src/main/java/design_patters/dominio/PrepararBebida.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/prova1_corrigida/prova_questao4/java/src/main/java/design_patters/dominio/PrepararPratoPrincipal.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/prova1_corrigida/prova_questao4/java/src/main/java/design_patters/dominio/PrepararSobremesa.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/prova1_corrigida/prova_questao4/java/src/main/java/design_patters/dominio/SolicitacaoBase.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/prova1_corrigida/prova_questao4/java/src/main/java/design_patters/dominio/SolicitacaoPreparo.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/prova1_corrigida/prova_questao4/java/src/main/java/design_patters/dominio/StatusSolicitacao.java

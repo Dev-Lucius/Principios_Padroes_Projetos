@@ -2,7 +2,7 @@
 
 ## 1. O problema
 
-Uma instituição de ensino cadastra três tipos de aluno. Independentemente do tipo, o cadastro segue uma **sequência geral**:
+Uma instituição de ensino cadastra três tipos de aluno. Independentemente do tipo, **o cadastro segue uma sequência geral**:
 
 1. validar os dados;
 2. realizar o cadastro;

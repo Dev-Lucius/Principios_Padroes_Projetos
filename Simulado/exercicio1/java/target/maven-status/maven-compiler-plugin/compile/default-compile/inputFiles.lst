@@ -1,0 +1,7 @@
+/home/lucius/Estudos/Principios_Padroes_Projetos/Exercicios/exercicio1/java/src/main/java/design_patters/apresentacao/Main.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/Exercicios/exercicio1/java/src/main/java/design_patters/dominio/EstrategiaOrdenacao.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/Exercicios/exercicio1/java/src/main/java/design_patters/dominio/OrdenarPorAvaliacao.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/Exercicios/exercicio1/java/src/main/java/design_patters/dominio/OrdenarPorMaiorPreco.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/Exercicios/exercicio1/java/src/main/java/design_patters/dominio/OrdenarPorMenorPreco.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/Exercicios/exercicio1/java/src/main/java/design_patters/dominio/OrdenarPorNome.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/Exercicios/exercicio1/java/src/main/java/design_patters/dominio/Produto.java

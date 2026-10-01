@@ -1,0 +1,7 @@
+design_patters/dominio/OrdenarPorMaiorPreco.class
+design_patters/dominio/EstrategiaOrdenacao.class
+design_patters/dominio/Produto.class
+design_patters/apresentacao/Main.class
+design_patters/dominio/OrdenarPorAvaliacao.class
+design_patters/dominio/OrdenarPorNome.class
+design_patters/dominio/OrdenarPorMenorPreco.class

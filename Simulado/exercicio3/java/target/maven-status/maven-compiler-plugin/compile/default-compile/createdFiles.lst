@@ -1,0 +1,8 @@
+design_patters/dominio/Estoque.class
+design_patters/dominio/Pedido.class
+design_patters/dominio/Transportadora.class
+design_patters/dominio/Status.class
+design_patters/apresentacao/Main.class
+design_patters/dominio/Cliente.class
+design_patters/dominio/Subject.class
+design_patters/dominio/Observer.class

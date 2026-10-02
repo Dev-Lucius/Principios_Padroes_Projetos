@@ -1,13 +1,12 @@
 package design_patters.apresentacao;
 
-import design_patters.dominio.EstrategiaOrdenacao;
+import java.util.List;
+
 import design_patters.dominio.OrdenarPorAvaliacao;
 import design_patters.dominio.OrdenarPorMaiorPreco;
 import design_patters.dominio.OrdenarPorMenorPreco;
 import design_patters.dominio.OrdenarPorNome;
 import design_patters.dominio.Produto;
-
-import java.util.List;
 
 public class Main {
 public static void main(String[] args) {
@@ -74,5 +73,20 @@ public static void main(String[] args) {
         produtos.get(0).setOrdenacao(maiorPreco);
         List<Produto> listaOrdenada = produtos.get(0).ordenarProduto(produtos);
         listaOrdenada.forEach(System.out::println);
+
+        // Lista Ordenada pelo Menor Preco
+        produtos.get(0).setOrdenacao(menorPreco);
+        List<Produto> listaOrdenadaDois = produtos.get(0).ordenarProduto(produtos);
+        listaOrdenadaDois.forEach(System.out::println);
+
+        // Lista Ordenada pelo Nome
+        produtos.get(0).setOrdenacao(nome);
+        List<Produto> listaOrdenadaTres = produtos.get(0).ordenarProduto(produtos);
+        listaOrdenadaTres.forEach(System.out::println);
+
+        // Lista Ordenada por Avaliação
+        produtos.get(0).setOrdenacao(avaliacao);
+        List<Produto> listaOrdenadaQuatro = produtos.get(0).ordenarProduto(produtos);
+        listaOrdenadaQuatro.forEach(System.out::println);
     }
 }

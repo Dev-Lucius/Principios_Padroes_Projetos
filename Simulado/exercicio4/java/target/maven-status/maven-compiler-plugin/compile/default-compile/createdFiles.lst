@@ -1,0 +1,9 @@
+design_patters/dominio/AppMobile.class
+design_patters/dominio/Grafico.class
+design_patters/dominio/Status.class
+design_patters/apresentacao/Main.class
+design_patters/dominio/PainelTemperatura.class
+design_patters/dominio/EstacaoMeteorologica.class
+design_patters/dominio/Subject.class
+design_patters/dominio/Observer.class
+design_patters/dominio/SistemaAlerta.class

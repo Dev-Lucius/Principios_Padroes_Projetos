@@ -1,753 +1,512 @@
-# 🏗️ MEGA GUIA DE DESIGN PATTERNS
-## Prova de Padrões de Projeto — Consulta Rápida
+# Guia Rápido de Design Patterns
+
+Resumo de seis padrões do catálogo GoF (*Gang of Four*): **Strategy**, **Observer**, **Template Method**, **Command**, **Iterator** e **Decorator**. Os exemplos usam Python, mas as ideias valem para qualquer linguagem orientada a objetos.
 
 ---
 
-# 📋 ÍNDICE
+## Sumário
 
-1. [Strategy](#1-strategy)
-2. [Observer](#2-observer)
-3. [Template Method](#3-template-method)
-4. [Command](#4-command)
-5. [Tabela Comparativa Rápida](#-tabela-comparativa-rápida)
-6. [Checklist para a Prova](#-checklist-para-a-prova)
-
----
-
-# 1. STRATEGY
-
-## 🎯 Propósito
-> **Definir uma família de algoritmos, encapsular cada um deles e torná-los intercambiáveis.**
-> Strategy permite que o algoritmo varie independentemente dos clientes que o utilizam.
-
-**Em uma frase:** *"Trocar comportamentos em tempo de execução sem herança."*
+1. [Visão geral](#visão-geral)
+2. [Strategy](#1-strategy)
+3. [Observer](#2-observer)
+4. [Template Method](#3-template-method)
+5. [Command](#4-command)
+6. [Iterator](#5-iterator)
+7. [Decorator](#6-decorator)
+8. [Comparações importantes](#comparações-importantes)
+9. [Como escolher](#como-escolher)
 
 ---
 
-## 🔑 Quando Usar
+## Visão geral
 
-| Situação | Exemplo |
-|----------|---------|
-| Muitos `if/else` ou `switch` para escolher comportamentos | Cálculo de frete: Sedex, PAC, Retirada |
-| Algoritmos relacionados mas com implementações diferentes | Ordenação: BubbleSort, QuickSort, MergeSort |
-| Precisa trocar comportamento em tempo de execução | Modo de pagamento no checkout |
-| Quer evitar herança massiva (herança múltipla de comportamentos) | Personagens de jogo com diferentes ataques |
-| Diferentes variantes de um mesmo algoritmo | Compressão: ZIP, RAR, 7Z |
-
----
-
-## 🧱 Estrutura
-
-```
-┌─────────────────┐         ┌─────────────────────┐
-│    Context      │◄────────│  Strategy (interface)│
-│  (usa strategy) │         │   + execute()        │
-│  - strategy     │         └─────────────────────┘
-│  + setStrategy()│                   ▲
-│  + doSomething()│                   │
-└─────────────────┘      ┌────────────┼────────────┐
-                         │            │            │
-              ┌──────────┴──┐  ┌──────┴────┐ ┌────┴──────┐
-              │ConcreteStrA │  │ConcreteStrB│ │ConcreteStrC│
-              │+ execute()  │  │+ execute() │ │+ execute() │
-              └─────────────┘  └────────────┘ └───────────┘
-```
+| Padrão | Categoria | Ideia central | Mecanismo principal |
+|---|---|---|---|
+| **Strategy** | Comportamental | Algoritmos intercambiáveis em tempo de execução | Composição |
+| **Observer** | Comportamental | Notificar vários objetos quando algo muda | Composição (lista de inscritos) |
+| **Template Method** | Comportamental | Esqueleto fixo de algoritmo, passos variáveis | Herança |
+| **Command** | Comportamental | Transformar uma ação em um objeto | Composição |
+| **Iterator** | Comportamental | Percorrer uma coleção sem expor sua estrutura | Composição |
+| **Decorator** | Estrutural | Adicionar comportamento envolvendo um objeto | Composição (*wrapping*) |
 
 ---
 
-## 💻 Exemplo de Código (Java)
+## 1. Strategy
 
-```java
-// ========== INTERFACE STRATEGY ==========
-interface FreteStrategy {
-    double calcular(double peso);
-}
+**Intenção:** definir uma família de algoritmos, encapsular cada um e torná-los intercambiáveis. O cliente escolhe qual usar sem alterar seu próprio código.
 
-// ========== CONCRETES ==========
-class Sedex implements FreteStrategy {
-    public double calcular(double peso) {
-        return peso * 1.5 + 10;
-    }
-}
+**Problema que resolve:** cadeias de `if/elif/else` ou `switch` que escolhem entre várias variantes de um mesmo comportamento (ex.: cálculo de frete, formas de pagamento, ordenação).
 
-class PAC implements FreteStrategy {
-    public double calcular(double peso) {
-        return peso * 0.8 + 5;
-    }
-}
+**Estrutura**
 
-class Retirada implements FreteStrategy {
-    public double calcular(double peso) {
-        return 0; // gratuito
-    }
-}
+- `Strategy`: interface comum dos algoritmos.
+- `ConcreteStrategy`: cada algoritmo concreto.
+- `Context`: guarda uma referência à estratégia e delega o trabalho a ela.
 
-// ========== CONTEXT ==========
-class Carrinho {
-    private FreteStrategy frete;
+**Exemplo**
 
-    public void setFrete(FreteStrategy frete) {
-        this.frete = frete;
-    }
+```python
+from abc import ABC, abstractmethod
 
-    public double finalizarCompra(double peso) {
-        return frete.calcular(peso);
-    }
-}
+class EstrategiaFrete(ABC):
+    @abstractmethod
+    def calcular(self, peso_kg: float) -> float: ...
 
-// ========== USO ==========
-Carrinho c = new Carrinho();
-c.setFrete(new Sedex());   // troca em runtime!
-c.finalizarCompra(2.5);
-c.setFrete(new PAC());     // troca de novo!
-c.finalizarCompra(2.5);
+class FreteEconomico(EstrategiaFrete):
+    def calcular(self, peso_kg):
+        return 10 + peso_kg * 1.5
+
+class FreteExpresso(EstrategiaFrete):
+    def calcular(self, peso_kg):
+        return 25 + peso_kg * 3.0
+
+class Pedido:
+    def __init__(self, peso_kg, estrategia: EstrategiaFrete):
+        self.peso_kg = peso_kg
+        self.estrategia = estrategia  # pode ser trocada em runtime
+
+    def total_frete(self):
+        return self.estrategia.calcular(self.peso_kg)
+
+pedido = Pedido(2, FreteExpresso())
+print(pedido.total_frete())  # 31.0
 ```
 
----
+**Quando usar**
 
-## ✅ Vantagens
+- Existem várias variantes de um algoritmo e você quer trocá-las dinamicamente.
+- Quer isolar regras de negócio que mudam com frequência.
+- Quer eliminar condicionais extensas.
 
-- ✅ **Elimina condicionais massivos** (if/else, switch)
-- ✅ **Princípio Aberto/Fechado**: novos algoritmos sem modificar código existente
-- ✅ **Reuso** de algoritmos em diferentes contextos
-- ✅ **Troca em runtime** — comportamento dinâmico
-- ✅ **Separação de responsabilidades** — cada strategy faz uma coisa
+**Prós e contras**
 
-## ❌ Desvantagens
+- ✅ Respeita o princípio Aberto/Fechado (novas estratégias sem alterar o contexto).
+- ✅ Facilita testes isolados de cada algoritmo.
+- ⚠️ Aumenta o número de classes.
+- ⚠️ O cliente precisa conhecer as diferenças entre estratégias para escolher bem.
 
-- ❌ Aumento no número de classes
-- ❌ Cliente precisa conhecer as strategies disponíveis
-- ❌ Overhead de criação de objetos (pode usar Singleton/Flyweight nas strategies)
-
----
-
-## 🎓 Dicas para a Prova
-
-> **Palavras-chave na questão:** *"trocar algoritmo"*, *"diferentes formas de calcular"*, *"evitar switch"*, *"comportamento intercambiável"*, *"família de algoritmos"*
-
-> **Diferenciar de:**
-> - **State**: Strategy é escolhido pelo cliente; State muda automaticamente conforme o estado interno do objeto
-> - **Template Method**: Strategy usa **composição**; Template Method usa **herança**
-
-> **Padrões relacionados:** Flyweight (compartilhar strategies), Factory (criar strategies)
+> Em linguagens com funções de primeira classe, uma estratégia pode ser apenas uma função passada como argumento.
 
 ---
 
-# 2. OBSERVER
+## 2. Observer
 
-## 🎯 Propósito
-> **Definir uma dependência um-para-muitos entre objetos, de modo que quando um objeto muda de estado, todos os seus dependentes são notificados e atualizados automaticamente.**
+**Intenção:** definir uma dependência um-para-muitos, de modo que, quando um objeto (*subject*) muda de estado, todos os seus dependentes (*observers*) sejam notificados automaticamente.
 
-**Em uma frase:** *"Inscrever-se para receber notificações de mudanças."*
+**Problema que resolve:** vários componentes precisam reagir a uma mudança sem que o emissor conheça os detalhes de cada um (eventos de UI, alertas, atualização de dashboards, mensageria).
 
----
+**Estrutura**
 
-## 🔑 Quando Usar
+- `Subject`: mantém a lista de observadores e oferece `inscrever`, `desinscrever` e `notificar`.
+- `Observer`: interface com o método `atualizar`.
+- `ConcreteObserver`: reage à notificação.
 
-| Situação | Exemplo |
-|----------|---------|
-| Um objeto muda e outros precisam reagir | Preço de ação muda → gráficos atualizam |
-| Desacoplar quem gera evento de quem reage | Botão clicado → múltiplos listeners |
-| Modelo MVC: Model notifica Views | Dados atualizam → interface atualiza |
-| Sistema de eventos/pub-sub | Notificações push, newsletters |
-| Precisa notificar N objetos sem conhecê-los | Sistema de logs, métricas, alertas |
+**Exemplo**
 
----
+```python
+class Assunto:
+    def __init__(self):
+        self._observadores = []
 
-## 🧱 Estrutura
+    def inscrever(self, obs):
+        self._observadores.append(obs)
 
-```
-         ┌─────────────────┐
-         │   Subject       │◄──────────────┐
-         │  (Observable)   │               │
-         │ - observers[]   │               │
-         │ + attach(obs)   │               │
-         │ + detach(obs)   │               │
-         │ + notify()      │               │
-         └────────┬────────┘               │
-                  │                        │
-                  ▲                        │
-         ┌────────┴────────┐               │
-         │ ConcreteSubject │               │
-         │ - state         │               │
-         │ + getState()    │               │
-         │ + setState()    │               │
-         └─────────────────┘               │
-                                           │
-         ┌─────────────────┐               │
-         │    Observer     │───────────────┘
-         │  + update()     │
-         └────────┬────────┘
-                  ▲
-      ┌───────────┼───────────┐
-      │           │           │
-┌─────┴────┐ ┌────┴────┐ ┌────┴────┐
-│ Concrete │ │Concrete │ │Concrete │
-│Observer1 │ │Observer2│ │Observer3│
-│+ update()│ │+ update()│ │+ update()│
-└──────────┘ └─────────┘ └─────────┘
+    def desinscrever(self, obs):
+        self._observadores.remove(obs)
+
+    def notificar(self, evento):
+        for obs in self._observadores:
+            obs.atualizar(evento)
+
+class Estoque(Assunto):
+    def __init__(self):
+        super().__init__()
+        self.quantidade = 0
+
+    def definir(self, quantidade):
+        self.quantidade = quantidade
+        self.notificar({"quantidade": quantidade})
+
+class AlertaEstoqueBaixo:
+    def atualizar(self, evento):
+        if evento["quantidade"] < 5:
+            print("⚠️ Estoque baixo!")
+
+class LogEstoque:
+    def atualizar(self, evento):
+        print(f"Log: estoque agora é {evento['quantidade']}")
+
+estoque = Estoque()
+estoque.inscrever(AlertaEstoqueBaixo())
+estoque.inscrever(LogEstoque())
+estoque.definir(3)
 ```
 
+**Quando usar**
+
+- Uma mudança em um objeto exige atualizar outros, e você não sabe quantos nem quais.
+- Quer baixo acoplamento entre quem emite e quem reage.
+
+**Prós e contras**
+
+- ✅ Acoplamento baixo entre emissor e receptores.
+- ✅ Observadores podem ser adicionados e removidos em tempo de execução.
+- ⚠️ A ordem de notificação geralmente não é garantida.
+- ⚠️ Risco de *memory leaks* se observadores não forem removidos.
+- ⚠️ Cadeias de notificações podem dificultar o rastreamento do fluxo.
+
 ---
 
-## 💻 Exemplo de Código (Java)
+## 3. Template Method
 
-```java
-import java.util.*;
+**Intenção:** definir o esqueleto de um algoritmo em uma classe base, deixando que as subclasses redefinam certos passos sem alterar a estrutura geral.
 
-// ========== OBSERVER INTERFACE ==========
-interface Observer {
-    void update(float temperatura);
-}
+**Problema que resolve:** várias classes seguem o mesmo fluxo, mudando só alguns detalhes, e o código do fluxo acaba duplicado.
 
-// ========== SUBJECT INTERFACE ==========
-interface Subject {
-    void attach(Observer o);
-    void detach(Observer o);
-    void notifyObservers();
-}
+**Estrutura**
 
-// ========== CONCRETE SUBJECT ==========
-class EstacaoMeteorologica implements Subject {
-    private List<Observer> observers = new ArrayList<>();
-    private float temperatura;
+- `AbstractClass`: contém o *template method* (o fluxo) e os passos, que podem ser:
+  - **abstratos**: a subclasse é obrigada a implementar;
+  - **hooks**: têm implementação padrão (geralmente vazia) e podem ser sobrescritos.
+- `ConcreteClass`: implementa os passos variáveis.
 
-    public void attach(Observer o) { observers.add(o); }
-    public void detach(Observer o) { observers.remove(o); }
+**Exemplo**
 
-    public void notifyObservers() {
-        for (Observer o : observers) {
-            o.update(temperatura);
-        }
-    }
+```python
+from abc import ABC, abstractmethod
 
-    public void setTemperatura(float temp) {
-        this.temperatura = temp;
-        notifyObservers();  // NOTIFICA TODOS!
-    }
-}
+class ExportadorRelatorio(ABC):
+    def exportar(self, dados):  # template method
+        self.abrir()
+        for linha in dados:
+            self.escrever_linha(linha)
+        self.fechar()
 
-// ========== CONCRETE OBSERVERS ==========
-class DisplayCelular implements Observer {
-    public void update(float temperatura) {
-        System.out.println("Celular: " + temperatura + "°C");
-    }
-}
+    def abrir(self):  # hook
+        pass
 
-class DisplayComputador implements Observer {
-    public void update(float temperatura) {
-        System.out.println("PC: " + temperatura + "°C");
-    }
-}
+    @abstractmethod
+    def escrever_linha(self, linha): ...  # passo obrigatório
 
-class AlertaGelo implements Observer {
-    public void update(float temperatura) {
-        if (temperatura < 0) 
-            System.out.println("ALERTA: Gelo detectado!");
-    }
-}
+    def fechar(self):  # hook
+        pass
 
-// ========== USO ==========
-EstacaoMeteorologica estacao = new EstacaoMeteorologica();
-estacao.attach(new DisplayCelular());
-estacao.attach(new DisplayComputador());
-estacao.attach(new AlertaGelo());
+class ExportadorCSV(ExportadorRelatorio):
+    def abrir(self):
+        print("nome,valor")
 
-estacao.setTemperatura(25.0f);  // Todos recebem!
-estacao.setTemperatura(-5.0f);  // Alerta dispara!
+    def escrever_linha(self, linha):
+        print(f"{linha[0]},{linha[1]}")
+
+class ExportadorHTML(ExportadorRelatorio):
+    def abrir(self):
+        print("<ul>")
+
+    def escrever_linha(self, linha):
+        print(f"  <li>{linha[0]}: {linha[1]}</li>")
+
+    def fechar(self):
+        print("</ul>")
+
+ExportadorHTML().exportar([("Ana", 10), ("Beto", 20)])
 ```
 
----
+**Quando usar**
 
-## ✅ Vantagens
+- Vários algoritmos compartilham a mesma estrutura e diferem em detalhes.
+- Quer controlar quais partes do fluxo as subclasses podem alterar.
+- Frameworks: "não nos chame, nós chamamos você" (*Hollywood Principle*).
 
-- ✅ **Desacoplamento** — Subject não conhece detalhes dos Observers
-- ✅ **Extensibilidade** — novos observers sem alterar o subject
-- ✅ **Broadcast automático** — um update, muitos receptores
-- ✅ **Dinâmico** — attach/detach em runtime
-- ✅ **Padrão fundamental do MVC**
+**Prós e contras**
 
-## ❌ Desvantagens
-
-- ❌ Notificações em cascata podem causar loops infinitos
-- ❌ Ordem de notificação não é garantida (depende da implementação)
-- ❌ Pode haver vazamento de memória se observers não forem removidos
-- ❌ Subject pode notificar observers desnecessariamente (push vs pull)
+- ✅ Elimina duplicação de código do fluxo comum.
+- ✅ A classe base controla a ordem dos passos.
+- ⚠️ Baseado em herança: acoplamento forte entre base e subclasses.
+- ⚠️ Pode violar o princípio de Liskov se subclasses alterarem o comportamento esperado.
+- ⚠️ Fluxos com muitos passos ficam difíceis de manter.
 
 ---
 
-## 🎓 Dicas para a Prova
+## 4. Command
 
-> **Palavras-chave na questão:** *"notificar"*, *"atualizar automaticamente"*, *"inscrever"*, *"escutar eventos"*, *"publish-subscribe"*, *"MVC"*, *"dependência um-para-muitos"*
+**Intenção:** encapsular uma requisição como um objeto, permitindo parametrizar clientes com diferentes ações, enfileirar, registrar em log e suportar operações de desfazer.
 
-> **Push vs Pull:**
-> - **Push**: Subject envia dados na notificação (`update(dados)`)
-> - **Pull**: Observer busca dados do Subject (`update()` + `subject.getState()`)
+> Não confundir com "comandante": o nome do padrão é **Command** (Comando).
 
-> **Diferenciar de:**
-> - **Mediator**: Observer é 1:N notificação; Mediator centraliza comunicação N:N
-> - **Chain of Responsibility**: Observer notifica TODOS; Chain passa até alguém tratar
+**Problema que resolve:** quem dispara a ação (botão, menu, atalho) não deveria conhecer quem a executa nem como ela é feita. Além disso, você pode querer desfazer, refazer, agendar ou registrar ações.
 
-> **Padrões relacionados:** Singleton (subject único), Command (encapsular notificações)
+**Estrutura**
 
----
+- `Command`: interface com `executar()` (e opcionalmente `desfazer()`).
+- `ConcreteCommand`: liga um receptor a uma ação e guarda os parâmetros necessários.
+- `Receiver`: quem realmente faz o trabalho.
+- `Invoker`: quem dispara o comando (e pode guardar o histórico).
+- `Client`: monta os comandos e os associa aos invokers.
 
-# 3. TEMPLATE METHOD
+**Exemplo (editor com desfazer)**
 
-## 🎯 Propósito
-> **Definir o esqueleto de um algoritmo em uma operação, postergando (deferring) alguns passos para as subclasses.**
-> Template Method permite que subclasses redefinam certos passos de um algoritmo sem mudar sua estrutura.
+```python
+from abc import ABC, abstractmethod
 
-**Em uma frase:** *"Definir o 'molde' do algoritmo, deixando os detalhes para as subclasses."*
+class Comando(ABC):
+    @abstractmethod
+    def executar(self): ...
 
----
+    @abstractmethod
+    def desfazer(self): ...
 
-## 🔑 Quando Usar
+class Editor:  # receiver
+    def __init__(self):
+        self.texto = ""
 
-| Situação | Exemplo |
-|----------|---------|
-| Algoritmos com passos fixos mas implementações variáveis | Relatório: gerar cabeçalho (fixo), corpo (varia), rodapé (fixo) |
-| Frameworks que definem fluxo, mas deixam hooks | JUnit: `setUp()` → `runTest()` → `tearDown()` |
-| Evitar duplicação de código em algoritmos similares | Processamento de arquivo: abrir → processar → fechar |
-| Algoritmo com invariantes (sempre iguais) e variantes | Bebida: ferver água (fixo), adicionar ingrediente (varia) |
-| Quer controlar extensão de subclasses | Métodos `final` (não sobrescrevíveis) + métodos abstratos |
+class InserirTexto(Comando):
+    def __init__(self, editor, trecho):
+        self.editor = editor
+        self.trecho = trecho
 
----
+    def executar(self):
+        self.editor.texto += self.trecho
 
-## 🧱 Estrutura
+    def desfazer(self):
+        fim = len(self.editor.texto) - len(self.trecho)
+        self.editor.texto = self.editor.texto[:fim]
 
-```
-┌─────────────────────────────┐
-│   AbstractClass             │
-│  (define o template)        │
-│                             │
-│  + templateMethod()  ◄──────┤── NÃO pode ser sobrescrito (final)
-│    ├─ step1()        ◄──────┤── implementação padrão (hook)
-│    ├─ step2()        ◄──────┤── ABSTRATO (deve ser implementado)
-│    ├─ step3()        ◄──────┤── implementação padrão
-│    └─ step4()        ◄──────┤── ABSTRATO
-│                             │
-│  # hook()            ◄──────┤── opcional, pode ser sobrescrito
-└─────────────┬───────────────┘
-              ▲
-    ┌─────────┴─────────┐
-    │                   │
-┌───┴──────┐     ┌──────┴──────┐
-│ConcreteA │     │  ConcreteB  │
-│+ step2() │     │  + step2()  │
-│+ step4() │     │  + step4()  │
-│# hook()  │     │             │
-└──────────┘     └─────────────┘
+class Historico:  # invoker
+    def __init__(self):
+        self._pilha = []
+
+    def executar(self, comando):
+        comando.executar()
+        self._pilha.append(comando)
+
+    def desfazer(self):
+        if self._pilha:
+            self._pilha.pop().desfazer()
+
+editor = Editor()
+historico = Historico()
+historico.executar(InserirTexto(editor, "Olá, "))
+historico.executar(InserirTexto(editor, "mundo!"))
+print(editor.texto)  # Olá, mundo!
+historico.desfazer()
+print(editor.texto)  # Olá,
 ```
 
+**Quando usar**
+
+- Precisa de desfazer/refazer.
+- Quer enfileirar, agendar ou registrar operações (filas de tarefas, *macros*, *logs* transacionais).
+- Quer desacoplar quem solicita de quem executa.
+
+**Prós e contras**
+
+- ✅ Desacopla invoker e receiver.
+- ✅ Facilita undo/redo, filas e composição de comandos (*macro commands*).
+- ⚠️ Cria muitas classes pequenas.
+- ⚠️ Desfazer exige guardar estado suficiente para reverter a ação.
+
 ---
 
-## 💻 Exemplo de Código (Java)
+## 5. Iterator
 
-```java
-// ========== CLASSE ABSTRATA (TEMPLATE) ==========
-abstract class BebidaQuente {
+**Intenção:** fornecer uma forma de acessar os elementos de uma coleção sequencialmente, sem expor sua representação interna.
 
-    // TEMPLATE METHOD — final = não pode ser sobrescrito!
-    public final void prepararReceita() {
-        ferverAgua();      // passo fixo
-        adicionarIngredientePrincipal();  // abstrato → subclasses implementam
-        despejarNaXicara(); // passo fixo
-        adicionarCondimentos(); // abstrato → subclasses implementam
-        // hook opcional
-        if (clienteQuerExtras()) {
-            adicionarExtras();
-        }
-    }
+> Não confundir com "iterativo" (adjetivo de repetição): o padrão é **Iterator**.
 
-    // Passos com implementação padrão (fixos)
-    private void ferverAgua() {
-        System.out.println("Fervendo água...");
-    }
+**Problema que resolve:** coleções diferentes (listas, árvores, grafos, resultados paginados) exigem formas diferentes de percorrer. O cliente não deveria depender da estrutura interna.
 
-    private void despejarNaXicara() {
-        System.out.println("Despejando na xícara...");
-    }
+**Estrutura**
 
-    // Passos ABSTRATOS — subclasses DEVEM implementar
-    protected abstract void adicionarIngredientePrincipal();
-    protected abstract void adicionarCondimentos();
+- `Iterator`: interface com algo como `proximo()` / `tem_proximo()`.
+- `ConcreteIterator`: guarda a posição atual da travessia.
+- `Aggregate` (coleção): cria o iterador.
 
-    // HOOK — método opcional, subclasses PODEM sobrescrever
-    protected boolean clienteQuerExtras() {
-        return true;  // padrão: sim
-    }
+**Exemplo (explícito)**
 
-    protected void adicionarExtras() {
-        System.out.println("Adicionando extras...");
-    }
-}
+```python
+class IteradorPlaylist:
+    def __init__(self, musicas):
+        self._musicas = musicas
+        self._i = 0
 
-// ========== CONCRETES ==========
-class Cha extends BebidaQuente {
-    protected void adicionarIngredientePrincipal() {
-        System.out.println("Adicionando saquinho de chá...");
-    }
-    protected void adicionarCondimentos() {
-        System.out.println("Adicionando limão...");
-    }
-}
+    def __iter__(self):
+        return self
 
-class Cafe extends BebidaQuente {
-    protected void adicionarIngredientePrincipal() {
-        System.out.println("Passando café moído...");
-    }
-    protected void adicionarCondimentos() {
-        System.out.println("Adicionando açúcar e leite...");
-    }
+    def __next__(self):
+        if self._i >= len(self._musicas):
+            raise StopIteration
+        musica = self._musicas[self._i]
+        self._i += 1
+        return musica
 
-    // Sobrescrevendo o HOOK
-    @Override
-    protected boolean clienteQuerExtras() {
-        return false;  // café puro, sem extras
-    }
-}
+class Playlist:
+    def __init__(self):
+        self._musicas = []
 
-// ========== USO ==========
-BebidaQuente cha = new Cha();
-cha.prepararReceita();  // segue o template!
+    def adicionar(self, musica):
+        self._musicas.append(musica)
 
-BebidaQuente cafe = new Cafe();
-cafe.prepararReceita();  // segue o mesmo template, mas com passos diferentes!
+    def __iter__(self):
+        return IteradorPlaylist(self._musicas)
+
+p = Playlist()
+p.adicionar("Faixa A")
+p.adicionar("Faixa B")
+for musica in p:
+    print(musica)
 ```
 
----
+**Exemplo (com generators, forma idiomática em Python)**
 
-## ✅ Vantagens
+```python
+class Playlist:
+    def __init__(self):
+        self._musicas = []
 
-- ✅ **Reuso de código** — código comum fica na superclasse
-- ✅ **Controle de extensão** — `final` no template, abstratos nos passos
-- ✅ **Inversão de controle** — "Hollywood Principle": *"Don't call us, we'll call you"*
-- ✅ **Fácil de manter** — mudanças no fluxo afetam todas as subclasses
-- ✅ **Frameworks** baseiam-se fortemente neste padrão
+    def adicionar(self, musica):
+        self._musicas.append(musica)
 
-## ❌ Desvantagens
+    def __iter__(self):
+        yield from self._musicas
 
-- ❌ Herança rígida — limitado a uma hierarquia
-- ❌ Difícil entender o fluxo completo (está espalhado)
-- ❌ Subclasses são acopladas à superclasse
-- ❌ Pouca flexibilidade — o esqueleto é fixo
-
----
-
-## 🎓 Dicas para a Prova
-
-> **Palavras-chave na questão:** *"esqueleto do algoritmo"*, *"passos fixos"*, *"molde"*, *"framework"*, *"hook"*, *"Hollywood Principle"*, *"algoritmo com variações"*
-
-> **Componentes essenciais:**
-> - `templateMethod()` — **final**, define o fluxo
-> - Métodos **abstratos** — obrigatórios nas subclasses
-> - Métodos **concretos** — reutilizáveis (passos fixos)
-> - **Hooks** — opcionais, permitem extensão pontual
-
-> **Diferenciar de:**
-> - **Strategy**: Template Method usa **herança**; Strategy usa **composição**
-> - **Factory Method**: Template Method define fluxo de algoritmo; Factory Method cria objetos
-
-> **Padrões relacionados:** Factory Method (usado dentro do template), Strategy (pode substituir herança por composição)
-
----
-
-# 4. COMMAND
-
-## 🎯 Propósito
-> **Encapsular uma solicitação como um objeto, permitindo parametrizar clientes com diferentes solicitações, enfileirar ou registrar solicitações, e suportar operações reversíveis (undo).**
-
-**Em uma frase:** *"Transformar uma ação em um objeto que pode ser armazenado, passado e executado depois."*
-
----
-
-## 🔑 Quando Usar
-
-| Situação | Exemplo |
-|----------|---------|
-| Desacoplar quem invoca de quem executa | Botão da UI → ação do backend |
-| Suportar Undo/Redo | Ctrl+Z / Ctrl+Y em editores |
-| Enfileirar ou agendar operações | Fila de jobs, tarefas assíncronas |
-| Registrar operações para log/audit | Sistema bancário: registrar todas as transações |
-| Operações compostas (macro commands) | Atalho de teclado executa várias ações |
-| API com callbacks parametrizáveis | Menu dinâmico com ações configuráveis |
-
----
-
-## 🧱 Estrutura
-
-```
-┌─────────────┐      ┌─────────────────┐      ┌──────────────┐
-│   Client    │─────►│    Invoker      │      │   Receiver   │
-│ (cria cmd)  │      │  (dispara cmd)  │      │ (executa a   │
-└─────────────┘      │  - command      │      │  ação real)  │
-                     │  + setCommand() │      │  + action()  │
-                     │  + execute()    │      └──────────────┘
-                     └────────┬────────┘              ▲
-                              │                       │
-                              │    ┌──────────────────┘
-                              │    │
-                              ▼    │
-                     ┌─────────────────┐
-                     │ Command (interface)│
-                     │   + execute()      │
-                     │   + undo()         │  ← opcional
-                     └────────┬──────────┘
-                              ▲
-                    ┌─────────┴──────────┐
-                    │                    │
-             ┌──────┴──────┐      ┌─────┴──────┐
-             │ ConcreteCmdA│      │ConcreteCmdB│
-             │ - receiver  │      │ - receiver │
-             │ + execute() │      │ + execute()│
-             │ + undo()    │      │ + undo()   │
-             └─────────────┘      └────────────┘
+    def reversa(self):  # outro tipo de travessia
+        yield from reversed(self._musicas)
 ```
 
+**Quando usar**
+
+- Quer ocultar a estrutura interna da coleção.
+- Precisa de múltiplas formas de travessia (ordem normal, reversa, filtrada).
+- Quer uma interface uniforme para percorrer coleções diferentes.
+
+**Prós e contras**
+
+- ✅ Responsabilidade única: a travessia fica fora da coleção.
+- ✅ Várias travessias simultâneas, cada uma com seu estado.
+- ⚠️ Pode ser exagero para coleções simples.
+- ⚠️ Modificar a coleção durante a iteração pode gerar comportamento inesperado.
+
+> A maioria das linguagens modernas (Python, Java, C#, JavaScript) já traz esse padrão embutido na linguagem.
+
 ---
 
-## 💻 Exemplo de Código (Java)
+## 6. Decorator
 
-```java
-// ========== RECEIVER (quem executa de verdade) ==========
-class Luz {
-    private String local;
-    public Luz(String local) { this.local = local; }
+**Intenção:** adicionar responsabilidades a um objeto dinamicamente, envolvendo-o em outro objeto que implementa a mesma interface. É uma alternativa flexível à herança para estender comportamento.
 
-    public void ligar() { 
-        System.out.println(local + ": Luz LIGADA 💡"); 
-    }
-    public void desligar() { 
-        System.out.println(local + ": Luz DESLIGADA 🌑"); 
-    }
-}
+**Problema que resolve:** combinar funcionalidades opcionais por herança gera uma explosão de subclasses (`NotificadorComSMS`, `NotificadorComSMSeSlack`, `NotificadorComSlack`...).
 
-// ========== COMMAND INTERFACE ==========
-interface Command {
-    void execute();
-    void undo();
-}
+**Estrutura**
 
-// ========== CONCRETE COMMANDS ==========
-class LigarLuzCommand implements Command {
-    private Luz luz;
+- `Component`: interface comum.
+- `ConcreteComponent`: objeto original.
+- `Decorator`: implementa a interface e guarda uma referência a outro `Component`.
+- `ConcreteDecorator`: adiciona comportamento antes ou depois de delegar.
 
-    public LigarLuzCommand(Luz luz) { this.luz = luz; }
+**Exemplo**
 
-    public void execute() { luz.ligar(); }
-    public void undo() { luz.desligar(); }  // UNDO!
-}
+```python
+from abc import ABC, abstractmethod
 
-class DesligarLuzCommand implements Command {
-    private Luz luz;
+class Notificador(ABC):
+    @abstractmethod
+    def enviar(self, mensagem): ...
 
-    public DesligarLuzCommand(Luz luz) { this.luz = luz; }
+class NotificadorEmail(Notificador):
+    def enviar(self, mensagem):
+        print(f"Email: {mensagem}")
 
-    public void execute() { luz.desligar(); }
-    public void undo() { luz.ligar(); }  // UNDO!
-}
+class DecoradorNotificador(Notificador):
+    def __init__(self, envolvido: Notificador):
+        self._envolvido = envolvido
 
-// ========== INVOKER (quem dispara) ==========
-class ControleRemoto {
-    private Command slot;
-    private Command ultimoCommand;  // para UNDO
+    def enviar(self, mensagem):
+        self._envolvido.enviar(mensagem)
 
-    public void setCommand(Command cmd) { 
-        this.slot = cmd; 
-    }
+class ComSMS(DecoradorNotificador):
+    def enviar(self, mensagem):
+        super().enviar(mensagem)
+        print(f"SMS: {mensagem}")
 
-    public void pressionarBotao() {
-        slot.execute();
-        ultimoCommand = slot;
-    }
+class ComSlack(DecoradorNotificador):
+    def enviar(self, mensagem):
+        super().enviar(mensagem)
+        print(f"Slack: {mensagem}")
 
-    public void pressionarUndo() {
-        if (ultimoCommand != null) {
-            ultimoCommand.undo();
-        }
-    }
-}
-
-// ========== CLIENT ==========
-Luz luzSala = new Luz("Sala");
-Command ligar = new LigarLuzCommand(luzSala);
-Command desligar = new DesligarLuzCommand(luzSala);
-
-ControleRemoto controle = new ControleRemoto();
-
-controle.setCommand(ligar);
-controle.pressionarBotao();     // Sala: Luz LIGADA 💡
-controle.pressionarUndo();      // Sala: Luz DESLIGADA 🌑
-
-controle.setCommand(desligar);
-controle.pressionarBotao();     // Sala: Luz DESLIGADA 🌑
-controle.pressionarUndo();      // Sala: Luz LIGADA 💡
+# Combinações montadas em tempo de execução
+notificador = ComSlack(ComSMS(NotificadorEmail()))
+notificador.enviar("Deploy concluído")
+# Email: Deploy concluído
+# SMS: Deploy concluído
+# Slack: Deploy concluído
 ```
 
----
+**Quando usar**
 
-## 🔄 Macro Command (Command Composto)
+- Quer adicionar ou remover responsabilidades em objetos individuais, em tempo de execução.
+- Subclassificar geraria combinações demais.
+- Exemplos clássicos: *streams* de I/O (`BufferedReader(FileReader(...))`), middlewares, compressão e criptografia empilhadas.
 
-```java
-class MacroCommand implements Command {
-    private List<Command> commands = new ArrayList<>();
+**Prós e contras**
 
-    public void add(Command cmd) { commands.add(cmd); }
+- ✅ Combinações flexíveis, sem explosão de subclasses.
+- ✅ Cada decorator tem uma única responsabilidade.
+- ⚠️ Muitos objetos pequenos tornam a depuração mais difícil.
+- ⚠️ A ordem dos decorators pode alterar o resultado.
 
-    public void execute() {
-        for (Command cmd : commands) cmd.execute();
-    }
-
-    public void undo() {
-        // Desfaz na ordem inversa!
-        for (int i = commands.size() - 1; i >= 0; i--) {
-            commands.get(i).undo();
-        }
-    }
-}
-
-// Uso: "Modo Cinema" → desliga luz, fecha cortina, liga TV
-MacroCommand modoCinema = new MacroCommand();
-modoCinema.add(new DesligarLuzCommand(luzSala));
-modoCinema.add(new FecharCortinaCommand(cortina));
-modoCinema.add(new LigarTVCommand(tv));
-modoCinema.execute();  // Tudo de uma vez!
-```
+> Atenção: o `@decorator` do Python (sintaxe de funções) é um recurso da linguagem relacionado, mas não é o mesmo que o padrão Decorator do GoF.
 
 ---
 
-## ✅ Vantagens
+## Comparações importantes
 
-- ✅ **Desacoplamento total** — Cliente não conhece Receiver
-- ✅ **Undo/Redo** — fácil de implementar
-- ✅ **Enfileiramento** — commands podem ir para fila
-- ✅ **Logging/Auditoria** — histórico de todas as operações
-- ✅ **Composição** — Macro Commands para operações complexas
-- ✅ **Parametrização** — passar comportamentos como objetos
+### Strategy × Template Method
 
-## ❌ Desvantagens
+| | Strategy | Template Method |
+|---|---|---|
+| Mecanismo | Composição | Herança |
+| Momento da troca | Em tempo de execução | Em tempo de compilação (escolha da subclasse) |
+| Granularidade | Troca o algoritmo inteiro | Troca apenas passos do algoritmo |
+| Acoplamento | Mais baixo | Mais alto |
 
-- ❌ Muitas classes pequenas (um Command para cada ação)
-- ❌ Complexidade aumentada para operações simples
-- ❌ Gerenciamento de estado do undo pode ser complicado
+### Strategy × Decorator
 
----
+- **Strategy** muda o *miolo* (o algoritmo) do objeto.
+- **Decorator** muda a *casca* (adiciona comportamento ao redor), mantendo o núcleo.
 
-## 🎓 Dicas para a Prova
+### Command × Strategy
 
-> **Palavras-chave na questão:** *"desacoplar invocação da execução"*, *"undo/redo"*, *"fila de comandos"*, *"log de operações"*, *"macro"*, *"parametrizar ações"*, *"transações"*
+- Ambos encapsulam comportamento em objetos.
+- **Strategy** representa *como* fazer algo (variantes intercambiáveis de um mesmo objetivo).
+- **Command** representa *o que* fazer (uma solicitação específica, com parâmetros, que pode ser guardada, adiada e desfeita).
 
-> **Componentes essenciais:**
-> - **Command** — interface com `execute()` e opcionalmente `undo()`
-> - **ConcreteCommand** — encapsula o Receiver e a ação
-> - **Receiver** — objeto que executa a ação real
-> - **Invoker** — dispara o command (botão, menu, scheduler)
-> - **Client** — cria e configura o command
+### Observer × Command
 
-> **Diferenciar de:**
-> - **Strategy**: Command encapsula uma **ação/solicitação**; Strategy encapsula um **algoritmo**
-> - **Observer**: Command é disparado uma vez; Observer notifica múltiplos
-
-> **Padrões relacionados:** Composite (para Macro Commands), Memento (para estado do undo), Prototype (clonar commands)
+- **Observer**: reage a eventos, com muitos receptores para um emissor.
+- **Command**: executa uma ação específica solicitada, em geral com um receptor.
 
 ---
 
-# 📊 TABELA COMPARATIVA RÁPIDA
+## Como escolher
 
-| Aspecto | Strategy | Observer | Template Method | Command |
-|---------|----------|----------|-----------------|---------|
-| **Tipo** | Comportamental | Comportamental | Comportamental | Comportamental |
-| **Intenção** | Trocar algoritmos | Notificar mudanças | Definir esqueleto de algoritmo | Encapsular solicitação |
-| **Mecanismo** | Composição | Assinatura/Notificação | Herança | Encapsulamento em objeto |
-| **Relação** | Cliente → Strategy | 1:N Subject→Observers | Superclasse → Subclasse | Invoker → Command → Receiver |
-| **Troca em Runtime** | ✅ Sim | ✅ Sim | ❌ Não (herança) | ✅ Sim |
-| **Undo/Redo** | ❌ Não | ❌ Não | ❌ Não | ✅ Sim |
-| **Palavra-chave** | "Algoritmo intercambiável" | "Notificar/atualizar" | "Esqueleto/molde" | "Encapsular ação" |
-| **Analogia** | Trocar de ferramenta | Assinar newsletter | Receita de bolo | Controle remoto |
-| **Princípio** | Aberto/Fechado | Baixo acoplamento | Hollywood Principle | Desacoplamento total |
+| Se o seu problema é... | Considere |
+|---|---|
+| Muitos `if/else` escolhendo entre variantes de um algoritmo | **Strategy** |
+| Vários objetos precisam reagir a uma mudança de estado | **Observer** |
+| Várias classes com o mesmo fluxo e passos diferentes | **Template Method** |
+| Desfazer/refazer, filas de ações, macros, logs de operações | **Command** |
+| Percorrer uma coleção sem expor sua estrutura | **Iterator** |
+| Combinar funcionalidades opcionais sem criar dezenas de subclasses | **Decorator** |
 
----
+### Combinações comuns
 
-# ✅ CHECKLIST PARA A PROVA
-
-## 🔍 Como identificar o padrão na questão:
-
-### Strategy
-- [ ] Aparecem múltiplos algoritmos para o mesmo problema
-- [ ] Menção a "trocar comportamento em runtime"
-- [ ] Quer evitar `if/else` ou `switch` massivos
-- [ ] "Família de algoritmos" encapsulados
-
-### Observer
-- [ ] "Um muda, vários precisam saber"
-- [ ] "Notificar", "atualizar automaticamente", "inscrever"
-- [ ] MVC / Model notificando Views
-- [ ] Publish-Subscribe
-
-### Template Method
-- [ ] "Esqueleto", "molde", "passos fixos"
-- [ ] Algoritmo com partes invariantes + variantes
-- [ ] Frameworks, JUnit, processamento em etapas
-- [ ] "Hook", "Hollywood Principle"
-
-### Command
-- [ ] "Desacoplar quem chama de quem executa"
-- [ ] Undo/Redo, fila de operações, log
-- [ ] Macro comandos, atalhos
-- [ ] "Encapsular solicitação como objeto"
+- **Command + Observer**: a UI dispara comandos; observadores atualizam a tela após cada execução.
+- **Command + Iterator**: executar ou reverter um histórico de comandos em ordem.
+- **Strategy + Decorator**: escolher o algoritmo base e empilhar comportamentos extras (log, cache, métricas).
+- **Template Method + Strategy**: o fluxo fixo vem do template, e os passos mais voláteis são delegados a estratégias.
 
 ---
 
-## 🧠 Frases-memorização (mnemônicos)
+## Dica final
 
-| Padrão | Mnemônico |
-|--------|-----------|
-| **Strategy** | *"Estratégia de guerra: troco de tática conforme a batalha"* |
-| **Observer** | *"Observador de reality show: todos reagem quando algo acontece"* |
-| **Template Method** | *"Template de currículo: estrutura fixa, conteúdo varia"* |
-| **Command** | *"Comando militar: ordem encapsulada, pode ser desfeita"* |
-
----
-
-## ⚡ Diferenças Críticas (cai muito em prova!)
-
-### Strategy vs Template Method
-```
-Strategy: "COMPOSIÇÃO" → troca o objeto inteiro
-Template Method: "HERANÇA" → sobrescreve partes do método
-
-Use Strategy quando: precisa de MÁXIMA flexibilidade em runtime
-Use Template Method quando: o FLUXO é fixo, só os passos variam
-```
-
-### Observer vs Command
-```
-Observer: "1:N notificação automática" → Subject notifica TODOS
-Command: "1:1 solicitação encapsulada" → Invoker dispara UM command
-
-Observer: reativo (quando o estado muda, notifica)
-Command: ativo (quando o usuário clica, executa)
-```
-
----
-
-## 📝 Estrutura de Resposta para Questões Dissertativas
-
-Se a questão pedir para **explicar/aplicar** um padrão, siga esta estrutura:
-
-```
-1. DEFINIÇÃO (1 linha — cite o GoF)
-2. INTENÇÃO (para que serve — 1 frase)
-3. ESTRUTURA (quem são os participantes)
-4. APLICAÇÃO NO CENÁRIO (como usaria no problema dado)
-5. VANTAGENS (2-3 benefícios específicos do cenário)
-```
-
----
-
-> 🍀 **Boa prova!** Lembre-se: o padrão certo é aquele que resolve o problema de desacoplamento/comportamento da forma mais elegante possível.
-
----
-
-*Guia gerado para consulta rápida em provas de Design Patterns — Padrões Comportamentais*
+Padrões são **vocabulário comum e soluções testadas**, não regras obrigatórias. Aplique-os quando o problema aparecer (variação, acoplamento, duplicação), e não preventivamente: um padrão desnecessário só adiciona complexidade.

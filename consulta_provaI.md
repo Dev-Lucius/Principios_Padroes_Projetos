@@ -1,6 +1,8 @@
-# Guia Rápido de Design Patterns
+# Guia Rápido de Design Patterns (Java)
 
-Resumo de seis padrões do catálogo GoF (*Gang of Four*): **Strategy**, **Observer**, **Template Method**, **Command**, **Iterator** e **Decorator**. Os exemplos usam Python, mas as ideias valem para qualquer linguagem orientada a objetos.
+Resumo de sete padrões do catálogo GoF (*Gang of Four*): **Strategy**, **Observer**, **Template Method**, **Command**, **Iterator**, **Decorator** e **State**.
+
+> **Sobre os exemplos:** escritos para Java 17+. Em um projeto real, cada classe ou interface pública ficaria em seu próprio arquivo; aqui elas aparecem agrupadas para facilitar a leitura.
 
 ---
 
@@ -13,8 +15,9 @@ Resumo de seis padrões do catálogo GoF (*Gang of Four*): **Strategy**, **Obser
 5. [Command](#4-command)
 6. [Iterator](#5-iterator)
 7. [Decorator](#6-decorator)
-8. [Comparações importantes](#comparações-importantes)
-9. [Como escolher](#como-escolher)
+8. [State](#7-state)
+9. [Comparações importantes](#comparações-importantes)
+10. [Como escolher](#como-escolher)
 
 ---
 
@@ -28,6 +31,7 @@ Resumo de seis padrões do catálogo GoF (*Gang of Four*): **Strategy**, **Obser
 | **Command** | Comportamental | Transformar uma ação em um objeto | Composição |
 | **Iterator** | Comportamental | Percorrer uma coleção sem expor sua estrutura | Composição |
 | **Decorator** | Estrutural | Adicionar comportamento envolvendo um objeto | Composição (*wrapping*) |
+| **State** | Comportamental | Mudar o comportamento conforme o estado interno | Composição (delegação ao estado) |
 
 ---
 
@@ -35,7 +39,7 @@ Resumo de seis padrões do catálogo GoF (*Gang of Four*): **Strategy**, **Obser
 
 **Intenção:** definir uma família de algoritmos, encapsular cada um e torná-los intercambiáveis. O cliente escolhe qual usar sem alterar seu próprio código.
 
-**Problema que resolve:** cadeias de `if/elif/else` ou `switch` que escolhem entre várias variantes de um mesmo comportamento (ex.: cálculo de frete, formas de pagamento, ordenação).
+**Problema que resolve:** cadeias de `if/else` ou `switch` que escolhem entre variantes de um mesmo comportamento (cálculo de frete, formas de pagamento, ordenação).
 
 **Estrutura**
 
@@ -45,31 +49,49 @@ Resumo de seis padrões do catálogo GoF (*Gang of Four*): **Strategy**, **Obser
 
 **Exemplo**
 
-```python
-from abc import ABC, abstractmethod
+```java
+public interface EstrategiaFrete {
+    double calcular(double pesoKg);
+}
 
-class EstrategiaFrete(ABC):
-    @abstractmethod
-    def calcular(self, peso_kg: float) -> float: ...
+public class FreteEconomico implements EstrategiaFrete {
+    @Override
+    public double calcular(double pesoKg) {
+        return 10 + pesoKg * 1.5;
+    }
+}
 
-class FreteEconomico(EstrategiaFrete):
-    def calcular(self, peso_kg):
-        return 10 + peso_kg * 1.5
+public class FreteExpresso implements EstrategiaFrete {
+    @Override
+    public double calcular(double pesoKg) {
+        return 25 + pesoKg * 3.0;
+    }
+}
 
-class FreteExpresso(EstrategiaFrete):
-    def calcular(self, peso_kg):
-        return 25 + peso_kg * 3.0
+public class Carrinho {
+    private final double pesoKg;
+    private EstrategiaFrete estrategia;
 
-class Pedido:
-    def __init__(self, peso_kg, estrategia: EstrategiaFrete):
-        self.peso_kg = peso_kg
-        self.estrategia = estrategia  # pode ser trocada em runtime
+    public Carrinho(double pesoKg, EstrategiaFrete estrategia) {
+        this.pesoKg = pesoKg;
+        this.estrategia = estrategia;
+    }
 
-    def total_frete(self):
-        return self.estrategia.calcular(self.peso_kg)
+    public void setEstrategia(EstrategiaFrete estrategia) { // troca em runtime
+        this.estrategia = estrategia;
+    }
 
-pedido = Pedido(2, FreteExpresso())
-print(pedido.total_frete())  # 31.0
+    public double totalFrete() {
+        return estrategia.calcular(pesoKg);
+    }
+}
+
+// Uso
+Carrinho carrinho = new Carrinho(2, new FreteExpresso());
+System.out.println(carrinho.totalFrete()); // 31.0
+
+// Como é uma interface com um único método, também funciona com lambda:
+carrinho.setEstrategia(peso -> 0); // frete grátis
 ```
 
 **Quando usar**
@@ -82,10 +104,10 @@ print(pedido.total_frete())  # 31.0
 
 - ✅ Respeita o princípio Aberto/Fechado (novas estratégias sem alterar o contexto).
 - ✅ Facilita testes isolados de cada algoritmo.
-- ⚠️ Aumenta o número de classes.
+- ⚠️ Aumenta o número de classes (mitigável com lambdas e referências a métodos).
 - ⚠️ O cliente precisa conhecer as diferenças entre estratégias para escolher bem.
 
-> Em linguagens com funções de primeira classe, uma estratégia pode ser apenas uma função passada como argumento.
+**No JDK:** `Comparator` passado a `Collections.sort()` / `List.sort()`.
 
 ---
 
@@ -103,43 +125,53 @@ print(pedido.total_frete())  # 31.0
 
 **Exemplo**
 
-```python
-class Assunto:
-    def __init__(self):
-        self._observadores = []
+```java
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
-    def inscrever(self, obs):
-        self._observadores.append(obs)
+public interface Observador<T> {
+    void atualizar(T evento);
+}
 
-    def desinscrever(self, obs):
-        self._observadores.remove(obs)
+public class Assunto<T> {
+    // CopyOnWriteArrayList permite inscrever/desinscrever durante a notificação
+    private final List<Observador<T>> observadores = new CopyOnWriteArrayList<>();
 
-    def notificar(self, evento):
-        for obs in self._observadores:
-            obs.atualizar(evento)
+    public void inscrever(Observador<T> obs) {
+        observadores.add(obs);
+    }
 
-class Estoque(Assunto):
-    def __init__(self):
-        super().__init__()
-        self.quantidade = 0
+    public void desinscrever(Observador<T> obs) {
+        observadores.remove(obs);
+    }
 
-    def definir(self, quantidade):
-        self.quantidade = quantidade
-        self.notificar({"quantidade": quantidade})
+    protected void notificar(T evento) {
+        for (Observador<T> obs : observadores) {
+            obs.atualizar(evento);
+        }
+    }
+}
 
-class AlertaEstoqueBaixo:
-    def atualizar(self, evento):
-        if evento["quantidade"] < 5:
-            print("⚠️ Estoque baixo!")
+public class Estoque extends Assunto<Integer> {
+    private int quantidade;
 
-class LogEstoque:
-    def atualizar(self, evento):
-        print(f"Log: estoque agora é {evento['quantidade']}")
+    public void definir(int quantidade) {
+        this.quantidade = quantidade;
+        notificar(quantidade);
+    }
+}
 
-estoque = Estoque()
-estoque.inscrever(AlertaEstoqueBaixo())
-estoque.inscrever(LogEstoque())
-estoque.definir(3)
+// Uso
+Estoque estoque = new Estoque();
+
+estoque.inscrever(qtd -> {
+    if (qtd < 5) System.out.println("⚠️ Estoque baixo!");
+});
+estoque.inscrever(qtd -> System.out.println("Log: estoque agora é " + qtd));
+
+estoque.definir(3);
+// ⚠️ Estoque baixo!
+// Log: estoque agora é 3
 ```
 
 **Quando usar**
@@ -154,6 +186,8 @@ estoque.definir(3)
 - ⚠️ A ordem de notificação geralmente não é garantida.
 - ⚠️ Risco de *memory leaks* se observadores não forem removidos.
 - ⚠️ Cadeias de notificações podem dificultar o rastreamento do fluxo.
+
+**No JDK:** `java.beans.PropertyChangeListener` e `PropertyChangeSupport`, além dos *listeners* do Swing/JavaFX. As classes `java.util.Observable` e `Observer` estão **depreciadas desde o Java 9**, então evite usá-las.
 
 ---
 
@@ -172,43 +206,59 @@ estoque.definir(3)
 
 **Exemplo**
 
-```python
-from abc import ABC, abstractmethod
+```java
+import java.util.List;
 
-class ExportadorRelatorio(ABC):
-    def exportar(self, dados):  # template method
-        self.abrir()
-        for linha in dados:
-            self.escrever_linha(linha)
-        self.fechar()
+public abstract class ExportadorRelatorio {
 
-    def abrir(self):  # hook
-        pass
+    // Template method: final impede que subclasses alterem o fluxo
+    public final void exportar(List<String[]> dados) {
+        abrir();
+        for (String[] linha : dados) {
+            escreverLinha(linha);
+        }
+        fechar();
+    }
 
-    @abstractmethod
-    def escrever_linha(self, linha): ...  # passo obrigatório
+    protected void abrir() { }                          // hook
 
-    def fechar(self):  # hook
-        pass
+    protected abstract void escreverLinha(String[] linha); // passo obrigatório
 
-class ExportadorCSV(ExportadorRelatorio):
-    def abrir(self):
-        print("nome,valor")
+    protected void fechar() { }                         // hook
+}
 
-    def escrever_linha(self, linha):
-        print(f"{linha[0]},{linha[1]}")
+public class ExportadorCsv extends ExportadorRelatorio {
+    @Override
+    protected void abrir() {
+        System.out.println("nome,valor");
+    }
 
-class ExportadorHTML(ExportadorRelatorio):
-    def abrir(self):
-        print("<ul>")
+    @Override
+    protected void escreverLinha(String[] linha) {
+        System.out.println(linha[0] + "," + linha[1]);
+    }
+}
 
-    def escrever_linha(self, linha):
-        print(f"  <li>{linha[0]}: {linha[1]}</li>")
+public class ExportadorHtml extends ExportadorRelatorio {
+    @Override
+    protected void abrir() {
+        System.out.println("<ul>");
+    }
 
-    def fechar(self):
-        print("</ul>")
+    @Override
+    protected void escreverLinha(String[] linha) {
+        System.out.println("  <li>" + linha[0] + ": " + linha[1] + "</li>");
+    }
 
-ExportadorHTML().exportar([("Ana", 10), ("Beto", 20)])
+    @Override
+    protected void fechar() {
+        System.out.println("</ul>");
+    }
+}
+
+// Uso
+List<String[]> dados = List.of(new String[]{"Ana", "10"}, new String[]{"Beto", "20"});
+new ExportadorHtml().exportar(dados);
 ```
 
 **Quando usar**
@@ -225,13 +275,13 @@ ExportadorHTML().exportar([("Ana", 10), ("Beto", 20)])
 - ⚠️ Pode violar o princípio de Liskov se subclasses alterarem o comportamento esperado.
 - ⚠️ Fluxos com muitos passos ficam difíceis de manter.
 
+**No JDK:** `AbstractList`, `InputStream.read(byte[])` (que chama o `read()` abstrato) e `HttpServlet.service()` (que chama `doGet`, `doPost`...).
+
 ---
 
 ## 4. Command
 
 **Intenção:** encapsular uma requisição como um objeto, permitindo parametrizar clientes com diferentes ações, enfileirar, registrar em log e suportar operações de desfazer.
-
-> Não confundir com "comandante": o nome do padrão é **Command** (Comando).
 
 **Problema que resolve:** quem dispara a ação (botão, menu, atalho) não deveria conhecer quem a executa nem como ela é feita. Além disso, você pode querer desfazer, refazer, agendar ou registrar ações.
 
@@ -245,51 +295,78 @@ ExportadorHTML().exportar([("Ana", 10), ("Beto", 20)])
 
 **Exemplo (editor com desfazer)**
 
-```python
-from abc import ABC, abstractmethod
+```java
+import java.util.ArrayDeque;
+import java.util.Deque;
 
-class Comando(ABC):
-    @abstractmethod
-    def executar(self): ...
+public interface Comando {
+    void executar();
+    void desfazer();
+}
 
-    @abstractmethod
-    def desfazer(self): ...
+// Receiver
+public class Editor {
+    private final StringBuilder texto = new StringBuilder();
 
-class Editor:  # receiver
-    def __init__(self):
-        self.texto = ""
+    public void inserir(String trecho) {
+        texto.append(trecho);
+    }
 
-class InserirTexto(Comando):
-    def __init__(self, editor, trecho):
-        self.editor = editor
-        self.trecho = trecho
+    public void removerFinal(int quantidade) {
+        texto.setLength(texto.length() - quantidade);
+    }
 
-    def executar(self):
-        self.editor.texto += self.trecho
+    public String getTexto() {
+        return texto.toString();
+    }
+}
 
-    def desfazer(self):
-        fim = len(self.editor.texto) - len(self.trecho)
-        self.editor.texto = self.editor.texto[:fim]
+public class InserirTexto implements Comando {
+    private final Editor editor;
+    private final String trecho;
 
-class Historico:  # invoker
-    def __init__(self):
-        self._pilha = []
+    public InserirTexto(Editor editor, String trecho) {
+        this.editor = editor;
+        this.trecho = trecho;
+    }
 
-    def executar(self, comando):
-        comando.executar()
-        self._pilha.append(comando)
+    @Override
+    public void executar() {
+        editor.inserir(trecho);
+    }
 
-    def desfazer(self):
-        if self._pilha:
-            self._pilha.pop().desfazer()
+    @Override
+    public void desfazer() {
+        editor.removerFinal(trecho.length());
+    }
+}
 
-editor = Editor()
-historico = Historico()
-historico.executar(InserirTexto(editor, "Olá, "))
-historico.executar(InserirTexto(editor, "mundo!"))
-print(editor.texto)  # Olá, mundo!
-historico.desfazer()
-print(editor.texto)  # Olá,
+// Invoker
+public class Historico {
+    private final Deque<Comando> pilha = new ArrayDeque<>();
+
+    public void executar(Comando comando) {
+        comando.executar();
+        pilha.push(comando);
+    }
+
+    public void desfazer() {
+        if (!pilha.isEmpty()) {
+            pilha.pop().desfazer();
+        }
+    }
+}
+
+// Uso
+Editor editor = new Editor();
+Historico historico = new Historico();
+
+historico.executar(new InserirTexto(editor, "Olá, "));
+historico.executar(new InserirTexto(editor, "mundo!"));
+System.out.println(editor.getTexto()); // Olá, mundo!
+
+historico.desfazer();
+System.out.println(editor.getTexto()); // Olá,
 ```
 
 **Quando usar**
@@ -302,8 +379,10 @@ print(editor.texto)  # Olá,
 
 - ✅ Desacopla invoker e receiver.
 - ✅ Facilita undo/redo, filas e composição de comandos (*macro commands*).
-- ⚠️ Cria muitas classes pequenas.
+- ⚠️ Cria muitas classes pequenas (para comandos sem desfazer, uma lambda basta).
 - ⚠️ Desfazer exige guardar estado suficiente para reverter a ação.
+
+**No JDK:** `Runnable` e `Callable` submetidos a um `ExecutorService` são, na prática, comandos enfileirados.
 
 ---
 
@@ -311,66 +390,78 @@ print(editor.texto)  # Olá,
 
 **Intenção:** fornecer uma forma de acessar os elementos de uma coleção sequencialmente, sem expor sua representação interna.
 
-> Não confundir com "iterativo" (adjetivo de repetição): o padrão é **Iterator**.
-
 **Problema que resolve:** coleções diferentes (listas, árvores, grafos, resultados paginados) exigem formas diferentes de percorrer. O cliente não deveria depender da estrutura interna.
 
 **Estrutura**
 
-- `Iterator`: interface com algo como `proximo()` / `tem_proximo()`.
+- `Iterator`: interface com `hasNext()` e `next()`.
 - `ConcreteIterator`: guarda a posição atual da travessia.
-- `Aggregate` (coleção): cria o iterador.
+- `Aggregate` (coleção): cria o iterador (`Iterable` em Java).
 
-**Exemplo (explícito)**
+**Exemplo**
 
-```python
-class IteradorPlaylist:
-    def __init__(self, musicas):
-        self._musicas = musicas
-        self._i = 0
+```java
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
-    def __iter__(self):
-        return self
+public class Playlist implements Iterable<String> {
+    private final List<String> musicas = new ArrayList<>();
 
-    def __next__(self):
-        if self._i >= len(self._musicas):
-            raise StopIteration
-        musica = self._musicas[self._i]
-        self._i += 1
-        return musica
+    public void adicionar(String musica) {
+        musicas.add(musica);
+    }
 
-class Playlist:
-    def __init__(self):
-        self._musicas = []
+    // Travessia padrão (ordem de inserção)
+    @Override
+    public Iterator<String> iterator() {
+        return new Iterator<>() {
+            private int i = 0;
 
-    def adicionar(self, musica):
-        self._musicas.append(musica)
+            @Override
+            public boolean hasNext() {
+                return i < musicas.size();
+            }
 
-    def __iter__(self):
-        return IteradorPlaylist(self._musicas)
+            @Override
+            public String next() {
+                if (!hasNext()) throw new NoSuchElementException();
+                return musicas.get(i++);
+            }
+        };
+    }
 
-p = Playlist()
-p.adicionar("Faixa A")
-p.adicionar("Faixa B")
-for musica in p:
-    print(musica)
-```
+    // Outra forma de travessia: ordem reversa
+    public Iterable<String> reversa() {
+        return () -> new Iterator<>() {
+            private int i = musicas.size() - 1;
 
-**Exemplo (com generators, forma idiomática em Python)**
+            @Override
+            public boolean hasNext() {
+                return i >= 0;
+            }
 
-```python
-class Playlist:
-    def __init__(self):
-        self._musicas = []
+            @Override
+            public String next() {
+                if (!hasNext()) throw new NoSuchElementException();
+                return musicas.get(i--);
+            }
+        };
+    }
+}
 
-    def adicionar(self, musica):
-        self._musicas.append(musica)
+// Uso
+Playlist playlist = new Playlist();
+playlist.adicionar("Faixa A");
+playlist.adicionar("Faixa B");
 
-    def __iter__(self):
-        yield from self._musicas
-
-    def reversa(self):  # outro tipo de travessia
-        yield from reversed(self._musicas)
+for (String musica : playlist) {
+    System.out.println(musica);   // Faixa A, Faixa B
+}
+for (String musica : playlist.reversa()) {
+    System.out.println(musica);   // Faixa B, Faixa A
+}
 ```
 
 **Quando usar**
@@ -383,10 +474,10 @@ class Playlist:
 
 - ✅ Responsabilidade única: a travessia fica fora da coleção.
 - ✅ Várias travessias simultâneas, cada uma com seu estado.
-- ⚠️ Pode ser exagero para coleções simples.
-- ⚠️ Modificar a coleção durante a iteração pode gerar comportamento inesperado.
+- ⚠️ Pode ser exagero para coleções simples (muitas vezes basta devolver `musicas.iterator()`).
+- ⚠️ Modificar a coleção durante a iteração pode lançar `ConcurrentModificationException` nas coleções padrão (comportamento *fail-fast*).
 
-> A maioria das linguagens modernas (Python, Java, C#, JavaScript) já traz esse padrão embutido na linguagem.
+**No JDK:** `Iterable` e `Iterator` (base do *for-each*), e `Stream` para travessias funcionais.
 
 ---
 
@@ -394,7 +485,7 @@ class Playlist:
 
 **Intenção:** adicionar responsabilidades a um objeto dinamicamente, envolvendo-o em outro objeto que implementa a mesma interface. É uma alternativa flexível à herança para estender comportamento.
 
-**Problema que resolve:** combinar funcionalidades opcionais por herança gera uma explosão de subclasses (`NotificadorComSMS`, `NotificadorComSMSeSlack`, `NotificadorComSlack`...).
+**Problema que resolve:** combinar funcionalidades opcionais por herança gera uma explosão de subclasses (`NotificadorComSms`, `NotificadorComSmsESlack`, `NotificadorComSlack`...).
 
 **Estrutura**
 
@@ -405,47 +496,68 @@ class Playlist:
 
 **Exemplo**
 
-```python
-from abc import ABC, abstractmethod
+```java
+public interface Notificador {
+    void enviar(String mensagem);
+}
 
-class Notificador(ABC):
-    @abstractmethod
-    def enviar(self, mensagem): ...
+public class NotificadorEmail implements Notificador {
+    @Override
+    public void enviar(String mensagem) {
+        System.out.println("Email: " + mensagem);
+    }
+}
 
-class NotificadorEmail(Notificador):
-    def enviar(self, mensagem):
-        print(f"Email: {mensagem}")
+public abstract class DecoradorNotificador implements Notificador {
+    protected final Notificador envolvido;
 
-class DecoradorNotificador(Notificador):
-    def __init__(self, envolvido: Notificador):
-        self._envolvido = envolvido
+    protected DecoradorNotificador(Notificador envolvido) {
+        this.envolvido = envolvido;
+    }
 
-    def enviar(self, mensagem):
-        self._envolvido.enviar(mensagem)
+    @Override
+    public void enviar(String mensagem) {
+        envolvido.enviar(mensagem);
+    }
+}
 
-class ComSMS(DecoradorNotificador):
-    def enviar(self, mensagem):
-        super().enviar(mensagem)
-        print(f"SMS: {mensagem}")
+public class ComSms extends DecoradorNotificador {
+    public ComSms(Notificador envolvido) {
+        super(envolvido);
+    }
 
-class ComSlack(DecoradorNotificador):
-    def enviar(self, mensagem):
-        super().enviar(mensagem)
-        print(f"Slack: {mensagem}")
+    @Override
+    public void enviar(String mensagem) {
+        super.enviar(mensagem);
+        System.out.println("SMS: " + mensagem);
+    }
+}
 
-# Combinações montadas em tempo de execução
-notificador = ComSlack(ComSMS(NotificadorEmail()))
-notificador.enviar("Deploy concluído")
-# Email: Deploy concluído
-# SMS: Deploy concluído
-# Slack: Deploy concluído
+public class ComSlack extends DecoradorNotificador {
+    public ComSlack(Notificador envolvido) {
+        super(envolvido);
+    }
+
+    @Override
+    public void enviar(String mensagem) {
+        super.enviar(mensagem);
+        System.out.println("Slack: " + mensagem);
+    }
+}
+
+// Uso: combinações montadas em tempo de execução
+Notificador notificador = new ComSlack(new ComSms(new NotificadorEmail()));
+notificador.enviar("Deploy concluído");
+// Email: Deploy concluído
+// SMS: Deploy concluído
+// Slack: Deploy concluído
 ```
 
 **Quando usar**
 
 - Quer adicionar ou remover responsabilidades em objetos individuais, em tempo de execução.
 - Subclassificar geraria combinações demais.
-- Exemplos clássicos: *streams* de I/O (`BufferedReader(FileReader(...))`), middlewares, compressão e criptografia empilhadas.
+- Exemplos clássicos: *streams* de I/O, middlewares, compressão e criptografia empilhadas.
 
 **Prós e contras**
 
@@ -454,11 +566,110 @@ notificador.enviar("Deploy concluído")
 - ⚠️ Muitos objetos pequenos tornam a depuração mais difícil.
 - ⚠️ A ordem dos decorators pode alterar o resultado.
 
-> Atenção: o `@decorator` do Python (sintaxe de funções) é um recurso da linguagem relacionado, mas não é o mesmo que o padrão Decorator do GoF.
+**No JDK:** `new BufferedReader(new InputStreamReader(System.in))` e `Collections.unmodifiableList(...)`, `Collections.synchronizedList(...)`.
+
+---
+
+## 7. State
+
+**Intenção:** permitir que um objeto altere seu comportamento quando seu estado interno muda. Visualmente, o objeto parece mudar de classe.
+
+**Problema que resolve:** métodos cheios de condicionais (`if (status == ...)`) que se repetem em várias operações, geralmente em objetos com um ciclo de vida bem definido (pedido, documento, conexão, player de mídia).
+
+**Estrutura**
+
+- `Context`: mantém uma referência ao estado atual e delega as operações a ele.
+- `State`: interface com as operações que dependem do estado.
+- `ConcreteState`: implementa o comportamento de um estado e, quando apropriado, **provoca a transição** para o próximo.
+
+**Exemplo (ciclo de vida de um pedido)**
+
+```java
+public interface EstadoPedido {
+    void pagar(Pedido pedido);
+    void enviar(Pedido pedido);
+    void cancelar(Pedido pedido);
+}
+
+// Context
+public class Pedido {
+    private EstadoPedido estado = new Novo();
+
+    void setEstado(EstadoPedido estado) { // visibilidade de pacote: só os estados trocam
+        this.estado = estado;
+    }
+
+    public void pagar()    { estado.pagar(this); }
+    public void enviar()   { estado.enviar(this); }
+    public void cancelar() { estado.cancelar(this); }
+
+    public String getEstado() {
+        return estado.getClass().getSimpleName();
+    }
+}
+
+class Novo implements EstadoPedido {
+    @Override public void pagar(Pedido p)    { p.setEstado(new Pago()); }
+    @Override public void enviar(Pedido p)   { throw new IllegalStateException("Pague antes de enviar"); }
+    @Override public void cancelar(Pedido p) { p.setEstado(new Cancelado()); }
+}
+
+class Pago implements EstadoPedido {
+    @Override public void pagar(Pedido p)    { throw new IllegalStateException("Pedido já pago"); }
+    @Override public void enviar(Pedido p)   { p.setEstado(new Enviado()); }
+    @Override public void cancelar(Pedido p) { p.setEstado(new Cancelado()); } // aqui entraria o estorno
+}
+
+class Enviado implements EstadoPedido {
+    @Override public void pagar(Pedido p)    { throw new IllegalStateException("Pedido já pago"); }
+    @Override public void enviar(Pedido p)   { throw new IllegalStateException("Pedido já enviado"); }
+    @Override public void cancelar(Pedido p) { throw new IllegalStateException("Não é possível cancelar após o envio"); }
+}
+
+class Cancelado implements EstadoPedido {
+    @Override public void pagar(Pedido p)    { throw new IllegalStateException("Pedido cancelado"); }
+    @Override public void enviar(Pedido p)   { throw new IllegalStateException("Pedido cancelado"); }
+    @Override public void cancelar(Pedido p) { throw new IllegalStateException("Pedido já cancelado"); }
+}
+
+// Uso
+Pedido pedido = new Pedido();
+pedido.pagar();
+pedido.enviar();
+System.out.println(pedido.getEstado()); // Enviado
+
+pedido.cancelar(); // lança IllegalStateException: Não é possível cancelar após o envio
+```
+
+**Variação com `enum`:** quando os estados não carregam dados próprios, cada constante do `enum` pode implementar o comportamento e indicar o próximo estado, evitando criar uma classe por estado.
+
+**Quando usar**
+
+- O comportamento de um objeto depende do seu estado e muda em tempo de execução.
+- Há condicionais grandes e repetidas que testam o mesmo atributo de estado.
+- As regras de transição são claras (máquina de estados).
+
+**Prós e contras**
+
+- ✅ Elimina condicionais espalhadas; cada estado concentra suas regras.
+- ✅ Novos estados entram sem alterar os existentes (Aberto/Fechado).
+- ✅ As transições ficam explícitas e fáceis de auditar.
+- ⚠️ Muitas classes para máquinas de estado simples (com 2 ou 3 estados, um `enum` ou um `switch` pode bastar).
+- ⚠️ Os estados conhecem uns aos outros, o que cria acoplamento entre eles.
 
 ---
 
 ## Comparações importantes
+
+### Strategy × State
+
+Estruturalmente quase idênticos (um contexto delega a um objeto trocável), mas com intenções diferentes:
+
+| | Strategy | State |
+|---|---|---|
+| Quem escolhe | O **cliente** define a estratégia | O **próprio estado** decide a próxima transição |
+| Relação entre as variantes | Independentes, não se conhecem | Conhecem-se (um provoca a troca para o outro) |
+| Objetivo | Variar *como* uma tarefa é feita | Variar *o que o objeto faz* ao longo do seu ciclo de vida |
 
 ### Strategy × Template Method
 
@@ -476,7 +687,6 @@ notificador.enviar("Deploy concluído")
 
 ### Command × Strategy
 
-- Ambos encapsulam comportamento em objetos.
 - **Strategy** representa *como* fazer algo (variantes intercambiáveis de um mesmo objetivo).
 - **Command** representa *o que* fazer (uma solicitação específica, com parâmetros, que pode ser guardada, adiada e desfeita).
 
@@ -497,9 +707,11 @@ notificador.enviar("Deploy concluído")
 | Desfazer/refazer, filas de ações, macros, logs de operações | **Command** |
 | Percorrer uma coleção sem expor sua estrutura | **Iterator** |
 | Combinar funcionalidades opcionais sem criar dezenas de subclasses | **Decorator** |
+| Objeto com ciclo de vida e comportamento que muda conforme o status | **State** |
 
 ### Combinações comuns
 
+- **State + Observer**: ao mudar de estado, o objeto notifica interessados (ex.: pedido enviado dispara e-mail).
 - **Command + Observer**: a UI dispara comandos; observadores atualizam a tela após cada execução.
 - **Command + Iterator**: executar ou reverter um histórico de comandos em ordem.
 - **Strategy + Decorator**: escolher o algoritmo base e empilhar comportamentos extras (log, cache, métricas).

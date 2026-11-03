@@ -1,0 +1,8 @@
+dominio/FluxoArquivo.class
+dominio/FluxoBuffer.class
+dominio/FluxoComLog.class
+dominio/DecoradorFluxoDados.class
+dominio/FluxoDados.class
+apresentacao/Main.class
+dominio/FluxoCompactado.class
+dominio/FluxoCriptografado.class

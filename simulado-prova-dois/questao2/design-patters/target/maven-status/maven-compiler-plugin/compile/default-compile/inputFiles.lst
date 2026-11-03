@@ -1,0 +1,8 @@
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-dois/questao2/design-patters/src/main/java/apresentacao/Main.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-dois/questao2/design-patters/src/main/java/dominio/DecoradorFluxoDados.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-dois/questao2/design-patters/src/main/java/dominio/FluxoArquivo.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-dois/questao2/design-patters/src/main/java/dominio/FluxoBuffer.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-dois/questao2/design-patters/src/main/java/dominio/FluxoComLog.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-dois/questao2/design-patters/src/main/java/dominio/FluxoCompactado.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-dois/questao2/design-patters/src/main/java/dominio/FluxoCriptografado.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-dois/questao2/design-patters/src/main/java/dominio/FluxoDados.java

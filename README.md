@@ -1,15 +1,15 @@
-# 📐 Princípios e Padrões de Projeto de Software
+# Princípios e Padrões de Projeto de Software
 
 > Repositório de estudo e referência sobre fundamentos, princípios, padrões e boas práticas de projeto de software.
 
 ---
 
-## 📋 Sumário
+## Sumário
 
 - [Conceitos Fundamentais de Projeto](#-conceitos-fundamentais-de-projeto)
 - [Decisões de Projeto](#-decisões-de-projeto)
 - [Princípios de Projeto de Software](#-princípios-de-projeto-de-software)
-- [Refatoração](#-refatoração)
+- [Refatoração](#-refatoração)a2
 - [Padrões de Projeto (Design Patterns)](#-padrões-de-projeto-design-patterns)
 - [Anti-Padrões](#-anti-padrões)
 - [Princípios e Padrões de Arquitetura](#-princípios-e-padrões-de-arquitetura)
@@ -17,7 +17,7 @@
 
 ---
 
-## 🏗️ Conceitos Fundamentais de Projeto
+## Conceitos Fundamentais de Projeto
 
 Os pilares que sustentam todo projeto de software de qualidade.
 
@@ -30,14 +30,14 @@ Os pilares que sustentam todo projeto de software de qualidade.
 
 ---
 
-## ⚖️ Decisões de Projeto
+## Decisões de Projeto
 
 Escolhas críticas na modelagem de sistemas orientados a objetos.
 
 ### Herança (`is-a`)
 Relacionamento de especialização/generalização. Útil quando há verdadeira hierarquia semântica.
 
-> ⚠️ **Cuidado:** herança cria acoplamento forte. Prefira composição quando a relação não for estritamente de especialização.
+> **Cuidado:** herança cria acoplamento forte. Prefira composição quando a relação não for estritamente de especialização.
 
 ### Composição (`has-a`)
 Montagem de comportamentos através da agregação de objetos. Promove flexibilidade e reutilização.
@@ -58,7 +58,7 @@ class Pato {
 
 ---
 
-## 🧱 Princípios de Projeto de Software
+## Princípios de Projeto de Software
 
 ### SOLID
 
@@ -81,7 +81,7 @@ class Pato {
 
 ---
 
-## 🔧 Refatoração
+## Refatoração
 
 Técnica de reestruturar código existente **sem alterar seu comportamento externo**, melhorando a legibilidade, manutenibilidade e extensibilidade.
 
@@ -100,7 +100,7 @@ Técnica de reestruturar código existente **sem alterar seu comportamento exter
 
 ---
 
-## 🧩 Padrões de Projeto (Design Patterns)
+## Padrões de Projeto (Design Patterns)
 
 Soluções reutilizáveis para problemas recorrentes no projeto de software.
 
@@ -151,7 +151,7 @@ Padrões que ganharam relevância com evolução da indústria:
 
 ---
 
-## 🚫 Anti-Padrões
+## Anti-Padrões
 
 Práticas comuns que parecem soluções, mas causam mais problemas do que resolvem.
 
@@ -167,7 +167,7 @@ Práticas comuns que parecem soluções, mas causam mais problemas do que resolv
 
 ---
 
-## 🏛️ Princípios e Padrões de Arquitetura
+## rincípios e Padrões de Arquitetura
 
 Conceitos de nível arquitetural para organização de sistemas complexos.
 
@@ -190,7 +190,7 @@ Conceitos de nível arquitetural para organização de sistemas complexos.
 
 ---
 
-## 📚 Referências
+## Referências
 
 - *Design Patterns: Elements of Reusable Object-Oriented Software* — Erich Gamma, Richard Helm, Ralph Johnson, John Vlissides (GoF)
 - *Clean Code* — Robert C. Martin
@@ -200,7 +200,7 @@ Conceitos de nível arquitetural para organização de sistemas complexos.
 
 ---
 
-> 💡 **Nota:** Este repositório é um material de estudo em constante evolução. Contribuições, correções e sugestões são bem-vindas!
+> **Nota:** Este repositório é um material de estudo em constante evolução. Contribuições, correções e sugestões são bem-vindas!
 
 ---
 

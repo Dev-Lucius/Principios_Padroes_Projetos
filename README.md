@@ -9,7 +9,7 @@
 - [Conceitos Fundamentais de Projeto](#-conceitos-fundamentais-de-projeto)
 - [Decisões de Projeto](#-decisões-de-projeto)
 - [Princípios de Projeto de Software](#-princípios-de-projeto-de-software)
-- [Refatoração](#-refatoração)a2
+- [Refatoração](#-refatoração)
 - [Padrões de Projeto (Design Patterns)](#-padrões-de-projeto-design-patterns)
 - [Anti-Padrões](#-anti-padrões)
 - [Princípios e Padrões de Arquitetura](#-princípios-e-padrões-de-arquitetura)

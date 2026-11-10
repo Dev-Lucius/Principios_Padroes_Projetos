@@ -57,7 +57,7 @@ class Pato {
 ```
 
 ---
-
+ermitir que interfaces incompatíveis trabalhem juntas
 ## Princípios de Projeto de Software
 
 ### SOLID
@@ -167,7 +167,7 @@ Práticas comuns que parecem soluções, mas causam mais problemas do que resolv
 
 ---
 
-## rincípios e Padrões de Arquitetura
+## Princípios e Padrões de Arquitetura
 
 Conceitos de nível arquitetural para organização de sistemas complexos.
 

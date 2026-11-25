@@ -1,0 +1,7 @@
+design_patters/dominio/Usuario.class
+design_patters/dominio/Documento.class
+design_patters/apresentacao/Main.class
+design_patters/dominio/Perfil.class
+design_patters/dominio/AcessoNegadoException.class
+design_patters/dominio/DocumentoReal.class
+design_patters/dominio/DocumentoProxy.class

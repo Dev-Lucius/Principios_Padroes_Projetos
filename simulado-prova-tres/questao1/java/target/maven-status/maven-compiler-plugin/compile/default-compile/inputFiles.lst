@@ -1,0 +1,8 @@
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao1/java/src/main/java/design_patters/apresentacao/Main.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao1/java/src/main/java/design_patters/dominio/DecoratorFluxo.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao1/java/src/main/java/design_patters/dominio/FluxoArquivo.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao1/java/src/main/java/design_patters/dominio/FluxoBuffer.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao1/java/src/main/java/design_patters/dominio/FluxoComLog.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao1/java/src/main/java/design_patters/dominio/FluxoCompactado.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao1/java/src/main/java/design_patters/dominio/FluxoCriptografado.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao1/java/src/main/java/design_patters/dominio/FluxoDados.java

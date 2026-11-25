@@ -1,0 +1,7 @@
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao3/java/src/main/java/design_patters/apresentacao/Main.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao3/java/src/main/java/design_patters/dominio/Checkout.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao3/java/src/main/java/design_patters/dominio/GatewayPagamento.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao3/java/src/main/java/design_patters/dominio/MercadoPagoAdapter.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao3/java/src/main/java/design_patters/dominio/MercadoPagoSDK.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao3/java/src/main/java/design_patters/dominio/PagSeguroAPI.java
+/home/lucius/Estudos/Principios_Padroes_Projetos/simulado-prova-tres/questao3/java/src/main/java/design_patters/dominio/PagSeguroAdapter.java
